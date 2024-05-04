@@ -145,12 +145,24 @@ function init_floor_plan(floorplan_id, canvas, mode) {
                 if (mode == "readonly") {
                     object.set('selectable', false);
                 }
+            if (floorplan.background_image) {
+                img = fabric.Image.fromURL(floorplan.background_image, function(img) {
+                    canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                        scaleX: canvas.width / img.width,
+                        scaleY: canvas.height / img.height
+                     });
+                });
 
+            }
             });
         });
+
         reset_zoom(canvas);
         resize_canvas(canvas, window);
     }).fail(function (jq_xhr, text_status, error_thrown) {
         console.log(`error: ${error_thrown} - ${text_status}`);
     });
 };
+
+
+    

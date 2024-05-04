@@ -6,6 +6,12 @@ def file_upload(instance, filename):
     path = 'netbox-floorplan/'
 
     if hasattr(instance, 'site'):
-        path_prepend = instance.site.id
-
-    return f'{path}{path_prepend}_{filename}'
+        if instance.site is not None:
+            path_prepend = instance.site.id
+    elif hasattr(instance, 'location'):
+        if instance.location is not None:
+            path_prepend = instance.location.id
+    try:
+    	return f'{path}{path_prepend}_{filename}'
+    except:
+	    return f'{path}{filename}'
