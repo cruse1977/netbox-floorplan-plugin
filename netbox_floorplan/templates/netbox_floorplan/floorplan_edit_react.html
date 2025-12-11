@@ -1,0 +1,46 @@
+{% extends 'generic/_base.html' %}
+{% load static %}
+{% load form_helpers %}
+{% load helpers %}
+
+{% block head %}
+{{ block.super }}
+{# Fabric.js is still required as a dependency #}
+<script src="{% static 'netbox_floorplan/vendors/fabric-js-6.0.2.js' %}"></script>
+{% endblock head %}
+
+{% block title %}
+{{ obj }}
+{% endblock title %}
+
+{% block tabs %}
+<ul class="nav nav-tabs px-3">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="edit-tabs-tab" data-bs-toggle="tab" data-bs-target="#edit-tabs"
+            type="button" role="tab" aria-controls="edit-tabs" aria-selected="true">
+            Edit
+        </button>
+    </li>
+</ul>
+{% endblock tabs %}
+
+{% block content %}
+{% load template_utils %}
+
+{# Data injection for React app #}
+<div id="floorplan-data"
+     data-floorplan-id="{{ obj.pk }}"
+     data-site-id="{% if site %}{{ site.id }}{% endif %}"
+     data-location-id="{% if location %}{{ location.id }}{% endif %}"
+     data-record-type="{{ record_type }}"
+     data-csrf-token="{{ csrf_token }}"
+     style="display: none;">
+</div>
+
+{# React app mount point #}
+<div id="floorplan-editor-root"></div>
+
+{# Load React app #}
+<script type="module" src="{% static 'netbox_floorplan/dist/editor.js' %}"></script>
+
+{% endblock content %}

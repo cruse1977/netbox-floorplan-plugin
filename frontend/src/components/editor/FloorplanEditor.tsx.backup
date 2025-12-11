@@ -1,0 +1,395 @@
+/**
+ * Floorplan Editor Component
+ * Main editor interface with canvas and controls
+ */
+
+import React, { /* useEffect, */ useState } from 'react';
+import { useFloorplanStore } from '@/store/floorplanStore';
+import { FabricCanvas } from '@/components/canvas/FabricCanvas';
+import { CanvasService } from '@/services/canvas';
+// TEMP DISABLED FOR TESTING
+// import { RackDeviceTable } from '@/components/shared/RackDeviceTable';
+import { DisplayOptions } from '@/components/editor/DisplayOptions';
+import { ColorControls } from '@/components/editor/ColorControls';
+import { LayerControls } from '@/components/editor/LayerControls';
+import { ZoomControls } from '@/components/shared/ZoomControls';
+import { ScaleSelector } from '@/components/editor/ScaleSelector';
+// TEMP DISABLED FOR TESTING
+// import { DimensionsModal } from '@/components/editor/DimensionsModal';
+// import { ExportDialog } from '@/components/shared/ExportDialog';
+// import { useExport } from '@/hooks/useExport';
+import { resetZoom } from '@/utils/canvasUtils';
+// TEMP DISABLED FOR TESTING
+// import type { Rack, Device } from '@/types/floorplan';
+
+interface FloorplanEditorProps {
+  initialData: {
+    floorplanId: number;
+    siteId: number | null;
+    locationId: number | null;
+    recordType: 'site' | 'location';
+  };
+}
+
+export const FloorplanEditor: React.FC<FloorplanEditorProps> = ({ /* initialData */ }) => {
+  const {
+    // initialize, // TEMP DISABLED
+    // loadFloorplan, // TEMP DISABLED
+    saveFloorplan,
+    canvas,
+    floorplan,
+    // scaleFactor, // TEMP DISABLED
+    isLoading,
+    isSaving,
+    error,
+  } = useFloorplanStore();
+
+  // const [hasInitialized, setHasInitialized] = useState(false); // TEMP DISABLED
+  // const [mappedRackIds, setMappedRackIds] = useState<number[]>([]); // TEMP DISABLED
+  // const [mappedDeviceIds, setMappedDeviceIds] = useState<number[]>([]); // TEMP DISABLED
+  // TEMP DISABLED FOR TESTING
+  // const [isDimensionsModalOpen, setIsDimensionsModalOpen] = useState(false);
+  // const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [activeRackDeviceTab, setActiveRackDeviceTab] = useState<'rack' | 'device'>('rack');
+
+  // Export hook - TEMP DISABLED FOR TESTING
+  // const { handleExport } = useExport();
+
+  // TEMP DISABLED - Initialize store with data from Django template
+  /*
+  useEffect(() => {
+    if (!hasInitialized) {
+      initialize(initialData);
+      setHasInitialized(true);
+    }
+  }, [initialize, initialData, hasInitialized]);
+
+  // Load floorplan data once initialized
+  useEffect(() => {
+    if (hasInitialized && initialData.floorplanId) {
+      loadFloorplan(initialData.floorplanId);
+    }
+  }, [hasInitialized, initialData.floorplanId, loadFloorplan]);
+  */
+
+  // TEMP DISABLED FOR TESTING
+  /*
+  // Update mapped IDs when canvas changes
+  useEffect(() => {
+    if (canvas) {
+      const rackIds = CanvasService.getMappedRackIds(canvas);
+      const deviceIds = CanvasService.getMappedDeviceIds(canvas);
+      setMappedRackIds(rackIds);
+      setMappedDeviceIds(deviceIds);
+    }
+  }, [canvas, floorplan]);
+  */
+
+  const handleObjectDeleted = async () => {
+    // Auto-save after deletion
+    if (canvas) {
+      await saveFloorplan();
+    }
+  };
+
+  const handleObjectModified = async () => {
+    // Could implement auto-save on modification with debounce
+    console.log('Object modified');
+  };
+
+  const handleAddWall = () => {
+    if (canvas) {
+      CanvasService.addWall(canvas);
+    }
+  };
+
+  const handleAddArea = () => {
+    if (canvas) {
+      CanvasService.addArea(canvas);
+    }
+  };
+
+  const handleAddLabel = () => {
+    if (canvas) {
+      CanvasService.addLabel(canvas);
+    }
+  };
+
+  // TEMP DISABLED FOR TESTING
+  /*
+  const handleAddSimpleRack = (item: Rack | Device) => {
+    if (canvas) {
+      const rack = item as Rack;
+      CanvasService.addSimpleRack(canvas, rack, scaleFactor);
+      // Update mapped IDs
+      setMappedRackIds([...mappedRackIds, rack.id]);
+    }
+  };
+
+  const handleAddAdvancedRack = (item: Rack | Device) => {
+    if (canvas) {
+      const rack = item as Rack;
+      CanvasService.addAdvancedRack(canvas, rack, scaleFactor);
+      // Update mapped IDs
+      setMappedRackIds([...mappedRackIds, rack.id]);
+    }
+  };
+
+  const handleAddSimpleDevice = (item: Rack | Device) => {
+    if (canvas) {
+      const device = item as Device;
+      CanvasService.addSimpleDevice(canvas, device, scaleFactor);
+      // Update mapped IDs
+      setMappedDeviceIds([...mappedDeviceIds, device.id]);
+    }
+  };
+
+  const handleAddAdvancedDevice = (item: Rack | Device) => {
+    if (canvas) {
+      const device = item as Device;
+      CanvasService.addAdvancedDevice(canvas, device, scaleFactor);
+      // Update mapped IDs
+      setMappedDeviceIds([...mappedDeviceIds, device.id]);
+    }
+  };
+  */
+
+  const handleResetZoom = () => {
+    if (canvas) {
+      resetZoom(canvas);
+    }
+  };
+
+  const handleSave = async () => {
+    await saveFloorplan();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container-fluid mt-5">
+        <div className="row">
+          <div className="col-12 text-center">
+            <div className="spinner-border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-2">Loading floorplan...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container-fluid mt-5">
+        <div className="row">
+          <div className="col-12">
+            <div className="alert alert-danger" role="alert">
+              <h4 className="alert-heading">Error</h4>
+              <p>{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '20px' }}>
+      {/* TEMP: Test without Bootstrap grid */}
+      <div style={{ display: 'flex', gap: '20px' }}>
+        {/* Control Panel - Left Side */}
+        <div style={{ flex: '0 0 400px' }}>
+          <div className="card">
+            <h5 className="card-header">Controls</h5>
+            <div className="card-body">
+              {/* Floorplan Info */}
+              <div className="mb-3">
+                <h6>Floorplan: {floorplan?.display || 'Loading...'}</h6>
+                {floorplan?.site && <p className="text-muted mb-0">Site: {floorplan.site.name}</p>}
+                {floorplan?.location && <p className="text-muted mb-0">Location: {floorplan.location.name}</p>}
+              </div>
+
+              <hr />
+
+              {/* Scale & Dimensions */}
+              <ScaleSelector onOpenDimensionsModal={() => console.log('Open dimensions modal (disabled)')} />
+
+              <hr />
+
+              {/* Rack/Device Management */}
+              <div className="mb-3">
+                <label className="form-label">Rack/Device Add/Delete</label>
+                <small className="form-text text-muted d-block mb-2">
+                  <strong>Simple:</strong> Shows name + status only<br />
+                  <strong>Advanced:</strong> Shows name + status + role + tenant
+                </small>
+
+                {/* Tabs - React controlled, no Bootstrap JS */}
+                <ul className="nav nav-tabs" role="tablist">
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link ${activeRackDeviceTab === 'rack' ? 'active' : ''}`}
+                      type="button"
+                      onClick={() => setActiveRackDeviceTab('rack')}
+                    >
+                      Racks
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link ${activeRackDeviceTab === 'device' ? 'active' : ''}`}
+                      type="button"
+                      onClick={() => setActiveRackDeviceTab('device')}
+                    >
+                      Un-Racked Devices
+                    </button>
+                  </li>
+                </ul>
+
+                {/* Tab Content - React conditional rendering */}
+                <div className="border border-top-0 p-2">
+                  {activeRackDeviceTab === 'rack' && floorplan && (
+                    <div className="alert alert-info">
+                      RackDeviceTable disabled for testing
+                    </div>
+                  )}
+                  {activeRackDeviceTab === 'device' && floorplan && (
+                    <div className="alert alert-info">
+                      RackDeviceTable disabled for testing
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <hr />
+
+              {/* Supplementary Objects */}
+              <div className="mb-3">
+                <label className="form-label">Supplementary Objects</label>
+                <div className="d-grid gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline-info btn-sm"
+                    onClick={handleAddWall}
+                  >
+                    Add Wall
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-info btn-sm"
+                    onClick={handleAddArea}
+                  >
+                    Add Area
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-success btn-sm"
+                    onClick={handleAddLabel}
+                  >
+                    Add Label
+                  </button>
+                </div>
+              </div>
+
+              <hr />
+
+              {/* Color Controls */}
+              <ColorControls />
+
+              <hr />
+
+              {/* Display Options */}
+              <DisplayOptions />
+
+              <hr />
+
+              {/* Layer Controls */}
+              <LayerControls />
+
+              <hr />
+
+              {/* Zoom Controls */}
+              <ZoomControls onResetZoom={handleResetZoom} />
+
+              <hr />
+
+              {/* Export Button */}
+              <div className="mb-3">
+                <button
+                  type="button"
+                  className="btn btn-outline-success btn-sm w-100"
+                  onClick={() => console.log('Export dialog (disabled)')}
+                >
+                  <i className="mdi mdi-download"></i> Export Floorplan (Disabled)
+                </button>
+              </div>
+
+              <hr />
+
+              {/* Save Button */}
+              <div className="mb-3">
+                <button
+                  type="button"
+                  className="btn btn-primary w-100"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save'
+                  )}
+                </button>
+              </div>
+
+              {/* Instructions */}
+              <div className="alert alert-info mt-3">
+                <h6>Keyboard Shortcuts:</h6>
+                <ul className="mb-0 small">
+                  <li><kbd>Delete</kbd> - Delete selected object</li>
+                  <li><kbd>Arrow Keys</kbd> - Move object</li>
+                  <li><kbd>Shift</kbd> + <kbd>Arrows</kbd> - Rotate object</li>
+                  <li><kbd>Alt</kbd> + <kbd>Drag</kbd> - Pan canvas</li>
+                  <li><kbd>Mouse Wheel</kbd> - Zoom</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Canvas - Right Side */}
+        <div style={{ flex: '1' }}>
+          <div className="card">
+            <div className="card-body" id="content-container">
+              {/* TEMP: Always render canvas, no conditional */}
+              <FabricCanvas
+                readonly={false}
+                onObjectDeleted={handleObjectDeleted}
+                onObjectModified={handleObjectModified}
+                enableZoomPan={true}
+                enableKeyboard={true}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dimensions Modal - TEMP DISABLED FOR TESTING */}
+      {/* <DimensionsModal
+        isOpen={isDimensionsModalOpen}
+        onClose={() => setIsDimensionsModalOpen(false)}
+      /> */}
+
+      {/* Export Dialog - TEMP DISABLED FOR TESTING */}
+      {/* <ExportDialog
+        isOpen={isExportDialogOpen}
+        onClose={() => setIsExportDialogOpen(false)}
+        onExport={handleExport}
+      /> */}
+    </div>
+  );
+};
